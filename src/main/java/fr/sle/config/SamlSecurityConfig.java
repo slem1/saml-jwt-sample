@@ -2,6 +2,7 @@ package fr.sle.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -124,8 +125,8 @@ public class SamlSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public KeyManager keyManager() {
-        FileSystemResource storeFile = new FileSystemResource("/etc/myapp/saml-keystore.jks");
-        String storePass = "123456";
+        ClassPathResource storeFile = new ClassPathResource("/saml-keystore.jks");
+        String storePass = "samlstorepass";
         Map<String, String> passwords = new HashMap<>();
         passwords.put("mykeyalias", "mykeypass");
         return new JKSKeyManager(storeFile, storePass, passwords, "mykeyalias");
