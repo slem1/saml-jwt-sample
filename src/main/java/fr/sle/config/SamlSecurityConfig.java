@@ -17,7 +17,6 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -28,7 +27,6 @@ import org.springframework.security.saml.SAMLLogoutFilter;
 import org.springframework.security.saml.SAMLLogoutProcessingFilter;
 import org.springframework.security.saml.SAMLProcessingFilter;
 import org.springframework.security.saml.context.SAMLContextProviderImpl;
-import org.springframework.security.saml.context.SAMLContextProviderLB;
 import org.springframework.security.saml.key.JKSKeyManager;
 import org.springframework.security.saml.key.KeyManager;
 import org.springframework.security.saml.log.SAMLDefaultLogger;
@@ -58,6 +56,7 @@ import org.springframework.security.saml.websso.WebSSOProfileOptions;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
@@ -155,8 +154,7 @@ public class SamlSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public MetadataGenerator metadataGenerator() {
         MetadataGenerator metadataGenerator = new MetadataGenerator();
-        metadataGenerator.setEntityId("SamlSampleEntityId");
-        metadataGenerator.setEntityBaseURL("https://myappserver.com");
+        metadataGenerator.setEntityId("SamlJwtSampleEntityId");
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
         metadataGenerator.setKeyManager(keyManager());
@@ -373,12 +371,18 @@ public class SamlSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf()
                 .disable();
         http
+                .addFilterBefore(metadataGeneratorFilter(), ChannelProcessingFilter.class)
                 .addFilterAfter(samlFilter(), BasicAuthenticationFilter.class);
+
         http
                 .authorizeRequests()
                 .antMatchers("/error").permitAll()
                 .antMatchers("/saml/**").permitAll()
                 .anyRequest().authenticated();
+
+        http
+                .logout()
+                .logoutSuccessUrl("/");
     }
 
 }
