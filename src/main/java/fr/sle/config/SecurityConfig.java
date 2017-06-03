@@ -32,8 +32,8 @@ public class SecurityConfig {
 
             http.addFilterBefore(new JwtAuthenticationFilter(apiMatcher, super.authenticationManager()), UsernamePasswordAuthenticationFilter.class);
 
-            http.authorizeRequests()
-                    .antMatchers(apiMatcher)
+            http.antMatcher(apiMatcher).authorizeRequests()
+                    .anyRequest()
                     .authenticated();
         }
 
